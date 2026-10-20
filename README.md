@@ -270,6 +270,6 @@ For full endpoint listings, request/response bodies, and authentication headers,
 ---
 
 ## 👤 Author
-- **Intern**: Anas Khan
+- **Intern**: Anas Kareem
 - **Repository**: [https://github.com/anasniet77/codealpha_tasks](https://github.com/anasniet77/codealpha_tasks)
 - **Organization**: CodeAlpha Cloud Computing Internship
