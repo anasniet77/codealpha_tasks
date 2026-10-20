@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Data Redundancy Removal System — Identify, classify, and eliminate duplicate records in real-time.">
+  <title>Data Redundancy Removal System — CodeAlpha Task 1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.8);
+      --bg-glass: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --info: #3b82f6;
+      --info-bg: rgba(59, 130, 246, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Animated background ─────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 40% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+      z-index: -1;
+      animation: bgShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgShift {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-5%, 3%) rotate(2deg); }
+    }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+    /* ── Header ──────────────────────────── */
+    header {
+      padding: 32px 0 24px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #a78bfa, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    header p { color: var(--text-secondary); margin-top: 8px; font-size: 0.95rem; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-task { background: var(--accent-glow); color: #a5b4fc; margin-top: 12px; }
+
+    /* ── Stats grid ──────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+    }
+
+    .stat-card .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .stat-card.success .stat-value { background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text; }
+    .stat-card.danger .stat-value { background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; background-clip: text; }
+    .stat-card.warning .stat-value { background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text; }
+
+    /* ── Main layout ─────────────────────── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Card ─────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2 .icon { font-size: 1.3rem; }
+
+    /* ── Form ─────────────────────────────── */
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-group input::placeholder { color: var(--text-muted); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); color: var(--text-primary); }
+
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+    /* ── Result alert ────────────────────── */
+    .result-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      border-left: 4px solid;
+      animation: slideUp 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-box.success { background: var(--success-bg); border-color: var(--success); }
+    .result-box.danger { background: var(--danger-bg); border-color: var(--danger); }
+    .result-box.warning { background: var(--warning-bg); border-color: var(--warning); }
+    .result-box.info { background: var(--info-bg); border-color: var(--info); }
+
+    .result-box .result-title { font-weight: 700; margin-bottom: 4px; }
+    .result-box .result-detail { color: var(--text-secondary); font-size: 0.85rem; }
+    .result-box .result-score { font-family: monospace; margin-top: 4px; color: var(--text-muted); font-size: 0.82rem; }
+
+    /* ── Table ────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    tr:hover td { background: var(--bg-glass); }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .tag-duplicate { background: var(--danger-bg); color: #fca5a5; }
+    .tag-fuzzy { background: var(--warning-bg); color: #fcd34d; }
+    .tag-false { background: var(--info-bg); color: #93c5fd; }
+    .tag-unique { background: var(--success-bg); color: #6ee7b7; }
+
+    /* ── Tabs ─────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-btn:hover { color: var(--text-primary); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    /* ── Loading spinner ─────────────────── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .delete-btn:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Data Redundancy Removal System</h1>
+      <p>Intelligent duplicate detection with fuzzy matching & false-positive classification</p>
+      <span class="badge badge-task">CodeAlpha — Task 1</span>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="stat-total">–</div><div class="stat-label">Total Records</div></div>
+      <div class="stat-card success"><div class="stat-value" id="stat-unique">–</div><div class="stat-label">Unique Inserted</div></div>
+      <div class="stat-card danger"><div class="stat-value" id="stat-duplicates">–</div><div class="stat-label">Duplicates Blocked</div></div>
+      <div class="stat-card warning"><div class="stat-value" id="stat-fuzzy">–</div><div class="stat-label">Fuzzy Matches</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-fp">–</div><div class="stat-label">False Positives</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-processed">–</div><div class="stat-label">Total Processed</div></div>
+    </div>
+
+    <!-- Main layout -->
+    <div class="main-grid">
+      <!-- Left: Input form -->
+      <div class="card">
+        <h2><span class="icon">📝</span> Submit Record</h2>
+        <form id="record-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="first_name">First Name *</label>
+              <input type="text" id="first_name" name="first_name" placeholder="John" required>
+            </div>
+            <div class="form-group">
+              <label for="last_name">Last Name *</label>
+              <input type="text" id="last_name" name="last_name" placeholder="Doe" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" placeholder="+1 555-123-4567">
+          </div>
+          <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="123 Main St">
+          </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" placeholder="New York">
+          </div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <span id="btn-text">Submit & Check Redundancy</span>
+            <span id="btn-spinner" class="spinner" style="display:none"></span>
+          </button>
+        </form>
+        <div id="result-container"></div>
+      </div>
+
+      <!-- Right: Data views -->
+      <div class="card">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="records">Records</button>
+          <button class="tab-btn" data-tab="logs">Redundancy Log</button>
+        </div>
+
+        <div id="tab-records" class="tab-content active">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>City</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="records-body">
+                <tr><td colspan="6"><div class="empty-state"><div class="icon">📂</div><div>No records yet. Submit a record to get started.</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab-logs" class="tab-content">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Type</th>
+                  <th>Action</th>
+                  <th>Score</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="logs-body">
+                <tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><div>No logs yet.</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+
+    // ── Tabs ──────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // ── Load stats ───────────
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API}/api/stats`);
+        const data = await res.json();
+        document.getElementById('stat-total').textContent = data.totalRecords;
+        document.getElementById('stat-unique').textContent = data.uniqueInserted;
+        document.getElementById('stat-duplicates').textContent = data.duplicatesBlocked;
+        document.getElementById('stat-fuzzy').textContent = data.fuzzyBlocked;
+        document.getElementById('stat-fp').textContent = data.falsePositives;
+        document.getElementById('stat-processed').textContent = data.totalProcessed;
+      } catch (e) {
+        console.error('Failed to load stats:', e);
+      }
+    }
+
+    // ── Load records ─────────
+    async function loadRecords() {
+      try {
+        const res = await fetch(`${API}/api/records?limit=50`);
+        const data = await res.json();
+        const tbody = document.getElementById('records-body');
+        if (data.records.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">📂</div><div>No records yet.</div></div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.records.map(r => `
+          <tr>
+            <td>#${r.id}</td>
+            <td>${escHtml(r.first_name)} ${escHtml(r.last_name)}</td>
+            <td>${escHtml(r.email)}</td>
+            <td>${escHtml(r.phone || '—')}</td>
+            <td>${escHtml(r.city || '—')}</td>
+            <td><button class="delete-btn" onclick="deleteRecord(${r.id})" title="Delete">🗑️</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load records:', e);
+      }
+    }
+
+    // ── Load logs ────────────
+    async function loadLogs() {
+      try {
+        const res = await fetch(`${API}/api/logs?limit=50`);
+        const data = await res.json();
+        const tbody = document.getElementById('logs-body');
+        if (data.logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><div>No logs yet.</div></div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.logs.map(l => {
+          const tagClass = {
+            'exact_duplicate': 'tag-duplicate',
+            'fuzzy_match': 'tag-fuzzy',
+            'false_positive': 'tag-false',
+            'unique': 'tag-unique'
+          }[l.match_type] || '';
+          return `
+            <tr>
+              <td>${new Date(l.created_at).toLocaleString()}</td>
+              <td><span class="tag ${tagClass}">${l.match_type}</span></td>
+              <td>${l.action_taken}</td>
+              <td>${l.similarity_score !== null ? l.similarity_score.toFixed(3) : '—'}</td>
+              <td>${escHtml(l.details || '')}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Failed to load logs:', e);
+      }
+    }
+
+    // ── Delete record ────────
+    async function deleteRecord(id) {
+      if (!confirm('Delete this record?')) return;
+      try {
+        await fetch(`${API}/api/records/${id}`, { method: 'DELETE' });
+        loadRecords();
+        loadStats();
+      } catch (e) {
+        alert('Failed to delete record');
+      }
+    }
+
+    // ── Submit form ──────────
+    document.getElementById('record-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('btn-text');
+      const btnSpinner = document.getElementById('btn-spinner');
+      const resultContainer = document.getElementById('result-container');
+
+      btn.disabled = true;
+      btnText.textContent = 'Processing...';
+      btnSpinner.style.display = 'inline-block';
+
+      const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value
+      };
+
+      try {
+        const res = await fetch(`${API}/api/records`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        const data = await res.json();
+
+        let boxClass, title, detail;
+        if (data.action === 'inserted') {
+          boxClass = 'success'; title = '✅ Record Inserted'; detail = 'Unique record — no duplicates found.';
+          e.target.reset();
+        } else if (data.action === 'inserted_with_flag') {
+          boxClass = 'warning'; title = '⚠️ Inserted with Flag'; detail = data.warning || 'Similar record exists.';
+          e.target.reset();
+        } else if (data.reason === 'exact_duplicate') {
+          boxClass = 'danger'; title = '🚫 Exact Duplicate'; detail = data.details || 'This record already exists.';
+        } else if (data.reason === 'fuzzy_match') {
+          boxClass = 'warning'; title = '🔍 Fuzzy Match Detected'; detail = data.details || 'A very similar record exists.';
+        } else if (data.reason === 'validation_failed') {
+          boxClass = 'info'; title = '❌ Validation Failed'; detail = (data.errors || []).join(', ');
+        } else {
+          boxClass = 'danger'; title = '❌ Rejected'; detail = data.details || data.reason || 'Unknown error.';
+        }
+
+        resultContainer.innerHTML = `
+          <div class="result-box ${boxClass}">
+            <div class="result-title">${title}</div>
+            <div class="result-detail">${escHtml(detail)}</div>
+            ${data.similarityScore != null ? `<div class="result-score">Similarity Score: ${data.similarityScore.toFixed(3)}</div>` : ''}
+          </div>
+        `;
+
+        loadStats();
+        loadRecords();
+        loadLogs();
+      } catch (err) {
+        resultContainer.innerHTML = `
+          <div class="result-box danger">
+            <div class="result-title">⚠️ Network Error</div>
+            <div class="result-detail">${escHtml(err.message)}</div>
+          </div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Submit & Check Redundancy';
+        btnSpinner.style.display = 'none';
+      }
+    });
+
+    function escHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // Initial load
+    loadStats();
+    loadRecords();
+    loadLogs();
+  </script>
+</body>
+</html>

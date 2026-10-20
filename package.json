@@ -1,0 +1,29 @@
+{
+  "name": "codealpha-cloud-computing-tasks",
+  "version": "1.0.0",
+  "description": "CodeAlpha Cloud Computing Internship Tasks — Task 1 (Data Redundancy Removal), Task 3 (Cloud Bus Pass), Task 4 (Chatbot)",
+  "scripts": {
+    "install:all": "cd task1-data-redundancy && npm install && cd ../task3-bus-pass && npm install && cd ../task4-chatbot && npm install && cd ..",
+    "test": "node scripts/run-all-tests.js",
+    "test:all": "node scripts/run-all-tests.js",
+    "test:task1": "cd task1-data-redundancy && npm test",
+    "test:task3": "cd task3-bus-pass && npm test",
+    "test:task4": "cd task4-chatbot && npm test",
+    "start:task1": "cd task1-data-redundancy && npm start",
+    "start:task3": "cd task3-bus-pass && npm start",
+    "start:task4": "cd task4-chatbot && npm start"
+  },
+  "keywords": [
+    "codealpha",
+    "cloud-computing",
+    "internship",
+    "deduplication",
+    "bus-pass-system",
+    "chatbot",
+    "nlp",
+    "sqlite",
+    "docker"
+  ],
+  "author": "Anas Khan",
+  "license": "MIT"
+}

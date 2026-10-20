@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cloud-Based Bus Pass System — Apply, manage, and renew your bus passes online.">
+  <title>Cloud Bus Pass System — CodeAlpha Task 3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ── Auth Screen ──────────────────────── -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-container">
+      <div class="auth-branding">
+        <div class="logo">🚌</div>
+        <h1>CloudTransit</h1>
+        <p>Smart Bus Pass Management</p>
+        <span class="badge">CodeAlpha — Task 3</span>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login" id="tab-login">Sign In</button>
+          <button class="auth-tab" data-tab="register" id="tab-register">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+            <span class="btn-text">Sign In</span>
+            <span class="spinner" style="display:none"></span>
+          </button>
+          <div id="login-error" class="form-error"></div>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form">
+          <div class="form-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Password (min 6 chars)</label>
+            <input type="password" id="reg-password" placeholder="••••••••" minlength="6" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-phone">Phone</label>
+              <input type="text" id="reg-phone" placeholder="+1 555-1234">
+            </div>
+            <div class="form-group">
+              <label for="reg-address">Address</label>
+              <input type="text" id="reg-address" placeholder="123 Main St">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="reg-btn">
+            <span class="btn-text">Create Account</span>
+            <span class="spinner" style="display:none"></span>
+          </button>
+          <div id="register-error" class="form-error"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Dashboard Screen ─────────────────── -->
+  <div id="dashboard-screen" class="screen">
+    <!-- Top Nav -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <span class="nav-logo">🚌</span>
+        <span class="nav-title">CloudTransit</span>
+      </div>
+      <div class="nav-right">
+        <span class="nav-user" id="nav-user-name"></span>
+        <button class="btn btn-sm btn-ghost" id="logout-btn">Logout</button>
+      </div>
+    </nav>
+
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <button class="sidebar-btn active" data-section="overview" id="nav-overview">
+          <span class="sidebar-icon">📊</span> Overview
+        </button>
+        <button class="sidebar-btn" data-section="apply" id="nav-apply">
+          <span class="sidebar-icon">🎫</span> Apply for Pass
+        </button>
+        <button class="sidebar-btn" data-section="passes" id="nav-passes">
+          <span class="sidebar-icon">💳</span> My Passes
+        </button>
+        <button class="sidebar-btn" data-section="transactions" id="nav-transactions">
+          <span class="sidebar-icon">📜</span> Transactions
+        </button>
+        <button class="sidebar-btn" data-section="routes" id="nav-routes">
+          <span class="sidebar-icon">🗺️</span> Routes
+        </button>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Overview -->
+        <section id="section-overview" class="section active">
+          <h2>Dashboard Overview</h2>
+          <div class="overview-stats" id="overview-stats">
+            <div class="overview-card">
+              <div class="overview-icon">💳</div>
+              <div class="overview-value" id="ov-active">0</div>
+              <div class="overview-label">Active Passes</div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-icon">📋</div>
+              <div class="overview-value" id="ov-apps">0</div>
+              <div class="overview-label">Applications</div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-icon">💰</div>
+              <div class="overview-value" id="ov-spent">$0</div>
+              <div class="overview-label">Total Spent</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:24px">
+            <h3>Recent Passes</h3>
+            <div id="recent-passes" class="pass-grid">
+              <div class="empty-state"><div class="empty-icon">🎫</div><p>No passes yet. Apply for your first pass!</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Apply for Pass -->
+        <section id="section-apply" class="section">
+          <h2>Apply for a Bus Pass</h2>
+          <div class="apply-grid">
+            <div class="card">
+              <h3>Select Pass Type</h3>
+              <div id="pass-type-list" class="pass-type-grid">
+                <div class="loading-state"><span class="spinner"></span> Loading pass types...</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Application Details</h3>
+              <form id="apply-form">
+                <div class="form-group">
+                  <label>Selected Pass</label>
+                  <input type="text" id="selected-pass-display" readonly placeholder="Select a pass type →">
+                  <input type="hidden" id="selected-pass-id">
+                </div>
+                <div class="form-group">
+                  <label for="select-route">Route (Optional)</label>
+                  <select id="select-route" class="form-select">
+                    <option value="">All Routes (Unrestricted)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="payment-method">Payment Method</label>
+                  <select id="payment-method" class="form-select">
+                    <option value="card">Credit/Debit Card</option>
+                    <option value="wallet">Digital Wallet</option>
+                    <option value="bank">Bank Transfer</option>
+                  </select>
+                </div>
+                <div class="price-display" id="price-display" style="display:none">
+                  <div class="price-label">Total Amount</div>
+                  <div class="price-value" id="price-value">$0.00</div>
+                  <div class="price-note">Price validated server-side</div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" id="apply-btn" disabled>
+                  <span class="btn-text">Complete Purchase</span>
+                  <span class="spinner" style="display:none"></span>
+                </button>
+                <div id="apply-result"></div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- My Passes -->
+        <section id="section-passes" class="section">
+          <h2>My Passes</h2>
+          <div id="passes-list" class="pass-grid">
+            <div class="loading-state"><span class="spinner"></span> Loading passes...</div>
+          </div>
+        </section>
+
+        <!-- Transactions -->
+        <section id="section-transactions" class="section">
+          <h2>Transaction History</h2>
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Pass Type</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-body">
+                  <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📜</div><p>No transactions yet.</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Routes -->
+        <section id="section-routes" class="section">
+          <h2>Available Routes</h2>
+          <div id="routes-list" class="routes-grid">
+            <div class="loading-state"><span class="spinner"></span> Loading routes...</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

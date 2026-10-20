@@ -1,0 +1,15 @@
+{
+  "name": "task1-data-redundancy",
+  "version": "1.0.0",
+  "description": "CodeAlpha Task 1 — Data Redundancy Removal System",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "node tests/test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  }
+}

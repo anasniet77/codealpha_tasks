@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # ── Task 1: Data Redundancy Removal System ───────────────
+  task1-redundancy:
+    build:
+      context: ./task1-data-redundancy
+      dockerfile: Dockerfile
+    container_name: codealpha-task1-redundancy
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - TASK1_PORT=3001
+      - TASK1_DB_PATH=/app/data/redundancy.db
+    volumes:
+      - task1-data:/app/data
+
+  # ── Task 3: Cloud-Based Bus Pass System ──────────────────
+  task3-buspass:
+    build:
+      context: ./task3-bus-pass
+      dockerfile: Dockerfile
+    container_name: codealpha-task3-buspass
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - TASK3_PORT=3003
+      - TASK3_DB_PATH=/app/data/buspass.db
+      - TASK3_JWT_SECRET=${TASK3_JWT_SECRET:-production-secure-jwt-secret-key-3003}
+    volumes:
+      - task3-data:/app/data
+
+  # ── Task 4: Chatbot ──────────────────────────────────────
+  task4-chatbot:
+    build:
+      context: ./task4-chatbot
+      dockerfile: Dockerfile
+    container_name: codealpha-task4-chatbot
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - TASK4_PORT=3004
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+volumes:
+  task1-data:
+    driver: local
+  task3-data:
+    driver: local
